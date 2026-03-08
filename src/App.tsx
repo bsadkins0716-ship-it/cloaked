@@ -4,8 +4,13 @@ import { Search, Gamepad2, ExternalLink, Shield, Info, LayoutGrid, List, Filter,
 import { games } from './games';
 
 export default function App() {
+  console.log('App component rendering...');
   const [isAuthorized, setIsAuthorized] = useState(() => {
-    return localStorage.getItem('cloaked_access') === 'true';
+    try {
+      return localStorage.getItem('cloaked_access') === 'true';
+    } catch (e) {
+      return false;
+    }
   });
   const [pin, setPin] = useState('');
   const [pinError, setPinError] = useState(false);
