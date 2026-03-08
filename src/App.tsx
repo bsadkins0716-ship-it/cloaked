@@ -1,17 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, Gamepad2, ExternalLink, Shield, Info, LayoutGrid, List, Filter, X } from 'lucide-react';
+import { Search, Gamepad2, ExternalLink, Shield, Info, LayoutGrid, List, X } from 'lucide-react';
 import { games } from './games';
 
 export default function App() {
-  console.log('App component rendering...');
-  const [isAuthorized, setIsAuthorized] = useState(() => {
-    try {
-      return localStorage.getItem('cloaked_access') === 'true';
-    } catch (e) {
-      return false;
-    }
-  });
+  const [isAuthorized, setIsAuthorized] = useState(false);
   const [pin, setPin] = useState('');
   const [pinError, setPinError] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -19,11 +12,22 @@ export default function App() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [customUrl, setCustomUrl] = useState('');
 
+  useEffect(() => {
+    try {
+      const auth = localStorage.getItem('cloaked_access');
+      if (auth === 'true') setIsAuthorized(true);
+    } catch (e) {
+      console.error('LocalStorage access failed', e);
+    }
+  }, []);
+
   const handlePinSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (pin === '1114') {
       setIsAuthorized(true);
-      localStorage.setItem('cloaked_access', 'true');
+      try {
+        localStorage.setItem('cloaked_access', 'true');
+      } catch (e) {}
       setPinError(false);
     } else {
       setPinError(true);
@@ -34,7 +38,9 @@ export default function App() {
 
   const handleLogout = () => {
     setIsAuthorized(false);
-    localStorage.removeItem('cloaked_access');
+    try {
+      localStorage.removeItem('cloaked_access');
+    } catch (e) {}
   };
 
   const categories = useMemo(() => {
@@ -61,10 +67,9 @@ export default function App() {
     const doc = win.document;
     doc.title = title;
     
-    // Add a favicon to make it look like a school site
     const link = doc.createElement('link');
     link.rel = 'icon';
-    link.href = 'https://ssl.gstatic.com/classroom/favicon.png'; // Google Classroom icon
+    link.href = 'https://ssl.gstatic.com/classroom/favicon.png';
     doc.head.appendChild(link);
 
     const iframe = doc.createElement('iframe');
@@ -155,7 +160,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-[#00ff00] selection:text-black">
-      {/* Brutalist Header */}
       <header className="border-b border-white/10 p-6 sticky top-0 bg-[#0a0a0a]/80 backdrop-blur-xl z-50">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
@@ -199,7 +203,6 @@ export default function App() {
       </header>
 
       <main className="max-w-7xl mx-auto p-6 space-y-12">
-        {/* Custom URL Section */}
         <section className="bg-white/5 border border-white/10 p-8 relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-2 opacity-10">
             <ExternalLink className="w-24 h-24" />
@@ -228,7 +231,6 @@ export default function App() {
           </div>
         </section>
 
-        {/* Filters & View Controls */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-white/10 pb-6">
           <div className="flex flex-wrap gap-2">
             <button
@@ -268,7 +270,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* Game Grid/List */}
         <div className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' : 'space-y-4'}>
           <AnimatePresence mode="popLayout">
             {filteredGames.map((game, index) => (
@@ -355,7 +356,6 @@ export default function App() {
         )}
       </main>
 
-      {/* Footer */}
       <footer className="border-t border-white/10 mt-24 p-12 bg-black">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
           <div className="space-y-4">
